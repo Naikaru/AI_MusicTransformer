@@ -1,21 +1,6 @@
 import torch
+import torch.nn.functional as F
 import numpy
-
-input = torch.Tensor([1., 1., 1., 1., 1., 1.,-1])
-
-
-def square_tensor(input, fill=0.5):
-    l = len(input)
-    print(l)
-    tensor = torch.ones((l,l))
-    print(tensor.size())
-    t = tensor.new_full((l,l), fill)
-    return t
-
-
-#class MusicMultiheadAttention(torch.nn.Module):
-#    def __init__(self, d_model, nhead, dropout=0.1):
-#        torch.nn.Module.__init__(self)
 
 class MusicMultiheadAttention(torch.nn.MultiheadAttention):
     def __init__(self, embed_dim, nhead, dropout=0.1, bias=True, add_bias_kv=False, 
@@ -33,12 +18,19 @@ class MusicMultiheadAttention(torch.nn.MultiheadAttention):
         K   = self.matrix_to_heads(K)
         V = self.matrix_to_heads(V)
         
-        z_attention = attention(Q, K, V)
+        z_attention = self.attention(Q, K, V)
+        print(z_attention.size())
         
         return None
 
-    def attention(weights_q, weights_k, weights_v):
-        return None
+    def attention(self, Q, K, V):
+        # Dh = self.head_dim // self.num_heads
+        # Add S^rel for correct implementation.
+        QK = torch.matmul(Q, torch.transpose(K, 2, 3))
+        QK_div = QK / (numpy.sqrt((self.head_dim // self.num_heads)))
+        activation = F.softmax(QK_div, -1)
+        attention = torch.matmul(activation, V)
+        return attention
     
     def matrix_to_heads(self, qkv):
         '''
@@ -47,7 +39,8 @@ class MusicMultiheadAttention(torch.nn.MultiheadAttention):
         '''
         batch_size_q = qkv.size(0)
         #print(qkv.size())
-        qkv = torch.reshape(qkv, (batch_size_q, qkv.size(0), self.num_heads, self.head_dim))
+        #qkv = torch.reshape(qkv, (batch_size_q, qkv.size(0), self.num_heads, self.head_dim))
+        qkv = torch.reshape(qkv, (batch_size_q, self.num_heads, qkv.size(1), self.head_dim))
         #print(self.head_dim // self.num_heads)
         #print(qkv.size())
         return qkv
@@ -61,16 +54,16 @@ class MusicMultiheadAttention(torch.nn.MultiheadAttention):
             and values:  V = XW^V
             which are all DxD square matrices.
         '''
-        l_query = query.size(1)
+        l_query = query.size(2)
+        print(l_query)
         weights_q = torch.nn.Linear(l_query, l_query)
         
         #print(L_q)
-        l_key = key.size(1)
+        l_key = key.size(2)
         weights_k = torch.nn.Linear(l_key, l_key)
         
-        l_value = key.size(1)
+        l_value = key.size(2)
         weights_v = torch.nn.Linear(l_value, l_value)
-        
         return weights_q(query), weights_k(key), weights_v(value)
     
 
@@ -88,10 +81,6 @@ class MusicTransformerDecoderLayer(torch.nn.TransformerDecoderLayer):
                  # OVERRIIIIIIDE
                  self.self_attn = MusicMultiheadAttention(d_model, nhead)
 
-#bob = torch.nn.Transformer(custom_encoder=MusicTransformerEncoderLayer(512, 8),
-#                     custom_decoder=MusicTransformerDecoderLayer(512, 8))
-#print(bob)
-#print(square_tensor(input))
 tensor = torch.ones((4,4,512))
 #print(tensor)
 
@@ -99,3 +88,4 @@ mma = MusicMultiheadAttention(512, 8)
 #print(mma)
 
 mma.forward(tensor, tensor, tensor)
+#mma.attention(1,2,3)
