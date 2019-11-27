@@ -73,7 +73,6 @@ class MusicMultiheadAttention(torch.nn.MultiheadAttention):
             which are all DxD square matrices.
         '''
         l_query = query.size(2)
-        print(l_query)
         weights_q = torch.nn.Linear(l_query, l_query)
         
         #print(L_q)
