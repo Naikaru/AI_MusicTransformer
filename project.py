@@ -25,7 +25,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 
 ##########################
-Hyperparameters
+#          Hyperparameters
 ##########################
 
 d_model = 512
@@ -40,7 +40,7 @@ pad_token = 1
 # vocabulary_size = 388 # depends on the dataset
 
 ##########################
-Encoder function
+#         Encoder function
 ##########################
 
 #Import library for encoder function
@@ -134,7 +134,7 @@ def generate_batch(dataset, dir_path, sequence_length=1024, batch_size=8):
     return inputs, labels
     
 ##########################
-Attention code 
+#           Attention code 
 ##########################
 
 class DynamicPositionEmbedding(torch.nn.Module):
@@ -339,7 +339,7 @@ class MusicTransformer(torch.nn.modules.Transformer):
         return output
     
 ##########################
-Training
+#                 Training
 ##########################
 
  
@@ -406,7 +406,7 @@ class Scheduler:
 scheduler = Scheduler(optimizer, d_model, warmup_steps)
 
 ##########################
-Load model if exists
+#     Load model if exists
 ##########################
 train_data, test_data = load_dataset(train_dir_path, test_dir_path)
 
@@ -438,7 +438,7 @@ test_writer = SummaryWriter()
 
 
 ##########################
-Training loop
+#            Training loop
 ##########################
 
 # Training
@@ -548,7 +548,7 @@ train_writer = SummaryWriter()
 test_writer = SummaryWriter()
 
 ##########################
-Visualize
+#                Visualize
 ##########################
 
 import matplotlib.pyplot as plt
@@ -561,7 +561,7 @@ img_path = os.path.join('/gdrive/My Drive/my_data/library/checkpoints/', "losses
 plt.savefig(img_path)
 
 ##########################
-Generate / Plot
+#          Generate / Plot
 ##########################
 
 model.eval()
